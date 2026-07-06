@@ -14,14 +14,23 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String  
-  role      Role     @default(USER)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  name          String
+  cpf           String   @unique
+  birthDate     DateTime
+  phone         String
+  cep           String
+  address       String
+  city          String
+  state         String
+  profilePhoto  String?
+  termsAccepted Boolean  @default(false)
+  email         String   @unique
+  password      String
+  role          Role     @default(USER)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("users")
 }
