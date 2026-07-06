@@ -13,10 +13,15 @@ enum Role {
   MASTER
 }
 
+enum TermType {
+  USER
+  ADMIN
+}
+
 model User {
-  id            String   @id @default(uuid())
+  id            String       @id @default(uuid())
   name          String
-  cpf           String   @unique
+  cpf           String       @unique
   birthDate     DateTime
   phone         String
   cep           String
@@ -24,13 +29,46 @@ model User {
   city          String
   state         String
   profilePhoto  String?
-  termsAccepted Boolean  @default(false)
-  email         String   @unique
+  termsAccepted Boolean      @default(false)
+  email         String       @unique
   password      String
-  role          Role     @default(USER)
-  active        Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  role          Role         @default(USER)
+  active        Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  termAccepts   TermAccept[]
 
   @@map("users")
+}
+
+model Term {
+  id         String       @id @default(uuid())
+  documentId String       @unique @default(uuid())
+  title      String?
+  text       String
+  type       TermType
+  version    Int
+  active     Boolean      @default(true)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  accepts    TermAccept[]
+
+  @@unique([type, version])
+  @@index([type, active])
+  @@map("terms")
+}
+
+model TermAccept {
+  id         String   @id @default(uuid())
+  userId     String
+  termId     String
+  accepted   Boolean  @default(true)
+  acceptedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+  term       Term     @relation(fields: [termId], references: [id])
+
+  @@unique([userId, termId])
+  @@index([userId])
+  @@index([termId])
+  @@map("term_accepts")
 }

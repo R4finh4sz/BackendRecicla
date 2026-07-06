@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import authRoutes from "@/routes/auth.routes";
+import termsRoutes from "@/routes/terms.routes";
 import { authMiddleware } from "@/middlewares/auth.middleware";
 import { swaggerSpec } from "@/swagger";
 
@@ -16,6 +17,7 @@ app.get("/docs.json", (_req, res) => {
 });
 
 app.use("/auth", authRoutes);
+app.use("/terms", termsRoutes);
 
 app.get("/me", authMiddleware, (req, res) => {
   res.json({ user: req.user });
