@@ -1,13 +1,11 @@
-import bcrypt from "bcryptjs";
 import { Prisma, Role } from "@prisma/client";
 import { roleLevel } from "@/config/roles";
 import { prisma } from "@/lib/prisma";
+import { hashPassword } from "@/services/password.service";
 import { RegisterInput } from "@/types/register.types";
 import { RegisterResult } from "@/types/auth.types";
 
 export class UserAlreadyExistsError extends Error {}
-
-const PASSWORD_SALT_ROUNDS = 10;
 
 function normalizeText(value: string) {
   return value.trim().toLowerCase();
@@ -52,7 +50,7 @@ export async function createUserWithRole(
     throw new UserAlreadyExistsError(message);
   }
 
-  const hashedPassword = await bcrypt.hash(password, PASSWORD_SALT_ROUNDS);
+  const hashedPassword = await hashPassword(password);
 
   try {
     const user = await prisma.user.create({
@@ -68,7 +66,8 @@ export async function createUserWithRole(
         profilePhoto: profilePhoto ? normalizeText(profilePhoto) : null,
         termsAccepted,
         email: normalizedEmail,
-        password: hashedPassword,
+        password: hashedPassword.hash,
+        passwordSalt: hashedPassword.salt,
         role,
       },
       select: {

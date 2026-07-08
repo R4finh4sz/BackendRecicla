@@ -3,8 +3,9 @@ import { Role } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { authConfig } from "@/config/env";
 import { AuthTokenPayload } from "@/types/auth.types";
+import { isSessionActive } from "@/services/session.service";
 
-export function authMiddleware(req: Request, res: Response, next: NextFunction) {
+export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -15,8 +16,19 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
 
   try {
     const payload = jwt.verify(token, authConfig.jwtSecret) as AuthTokenPayload;
+
+    if (!payload.sid) {
+      return res.status(401).json({ message: "Sessao invalida" });
+    }
+
+    const sessionActive = await isSessionActive(payload.sid, payload.sub);
+    if (!sessionActive) {
+      return res.status(401).json({ message: "Sessao expirada ou encerrada" });
+    }
+
     req.user = {
       id: payload.sub,
+      sessionId: payload.sid,
       email: payload.email,
       role: payload.role,
       level: payload.level,

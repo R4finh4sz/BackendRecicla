@@ -123,6 +123,22 @@ export const swaggerSpec = swaggerJSDoc({
             },
           },
         },
+        VerifyTwoFactorInput: {
+          type: "object",
+          required: ["challengeId", "code"],
+          properties: {
+            challengeId: {
+              type: "string",
+              format: "uuid",
+              example: "3f57a0f8-6f3c-4b19-a0e2-6b4e8b7a1f2a",
+            },
+            code: {
+              type: "string",
+              pattern: "^\\d{6}$",
+              example: "123456",
+            },
+          },
+        },
         User: {
           type: "object",
           properties: {
@@ -203,6 +219,29 @@ export const swaggerSpec = swaggerJSDoc({
           },
         },
         LoginResponse: {
+          type: "object",
+          properties: {
+            twoFactorRequired: {
+              type: "boolean",
+              enum: [true],
+              example: true,
+            },
+            challengeId: {
+              type: "string",
+              format: "uuid",
+            },
+            expiresAt: {
+              type: "string",
+              format: "date-time",
+              description: "Valido por ate 15 minutos",
+            },
+            message: {
+              type: "string",
+              example: "Codigo 2FA enviado para o e-mail cadastrado",
+            },
+          },
+        },
+        AuthResponse: {
           type: "object",
           properties: {
             token: {
@@ -516,7 +555,7 @@ export const swaggerSpec = swaggerJSDoc({
           },
           responses: {
             200: {
-              description: "Login realizado",
+              description: "Credenciais validas e codigo 2FA enviado por e-mail",
               content: {
                 "application/json": {
                   schema: {
@@ -547,6 +586,96 @@ export const swaggerSpec = swaggerJSDoc({
             },
             403: {
               description: "Usuario desativado",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            500: {
+              description: "Erro interno",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/auth/2fa/verify": {
+        post: {
+          tags: ["Auth"],
+          summary: "Valida o codigo 2FA enviado por e-mail",
+          description:
+            "Recebe o challengeId retornado no login e o codigo numerico de 6 digitos. O codigo expira em ate 15 minutos e o desafio bloqueia apos excesso de tentativas.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/VerifyTwoFactorInput",
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Codigo validado e token emitido",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/AuthResponse",
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Dados invalidos",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ValidationErrorResponse",
+                  },
+                },
+              },
+            },
+            401: {
+              description: "Codigo invalido",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            403: {
+              description: "Codigo expirado ou usuario desativado",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            404: {
+              description: "Desafio 2FA nao encontrado",
+              content: {
+                "application/json": {
+                  schema: {
+                    $ref: "#/components/schemas/ErrorResponse",
+                  },
+                },
+              },
+            },
+            429: {
+              description: "Muitas tentativas de validacao",
               content: {
                 "application/json": {
                   schema: {

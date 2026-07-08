@@ -5,6 +5,11 @@ export interface LoginInput {
   password: string;
 }
 
+export interface VerifyTwoFactorInput {
+  challengeId: string;
+  code: string;
+}
+
 export interface AuthenticatedUser {
   id: string;
   name: string;
@@ -14,6 +19,13 @@ export interface AuthenticatedUser {
 }
 
 export interface LoginResult {
+  twoFactorRequired: true;
+  challengeId: string;
+  expiresAt: Date;
+  message: string;
+}
+
+export interface AuthResult {
   token: string;
   user: AuthenticatedUser;
 }
@@ -24,6 +36,7 @@ export interface RegisterResult {
 
 export interface AuthTokenPayload {
   sub: string;
+  sid: string;
   email: string;
   role: Role;
   level: number;

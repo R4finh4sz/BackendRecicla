@@ -1,12 +1,19 @@
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "@/lib/prisma";
 import { roleLevel } from "@/config/roles";
 import { authConfig } from "@/config/env";
+import { verifyPassword } from "@/services/password.service";
+import { createSession } from "@/services/session.service";
 import {
+  createTwoFactorChallenge,
+  verifyTwoFactorChallenge,
+} from "@/services/two-factor.service";
+import {
+  AuthResult,
   AuthTokenPayload,
   LoginInput,
   LoginResult,
+  VerifyTwoFactorInput,
 } from "@/types/auth.types";
 
 export class InvalidCredentialsError extends Error {}
@@ -20,6 +27,7 @@ export async function login({ email, password }: LoginInput): Promise<LoginResul
       name: true,
       email: true,
       password: true,
+      passwordSalt: true,
       role: true,
       active: true,
     },
@@ -29,7 +37,7 @@ export async function login({ email, password }: LoginInput): Promise<LoginResul
     throw new InvalidCredentialsError("E-mail ou senha invalidos");
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  const isPasswordValid = await verifyPassword(password, user.password, user.passwordSalt);
   if (!isPasswordValid) {
     throw new InvalidCredentialsError("E-mail ou senha invalidos");
   }
@@ -38,10 +46,32 @@ export async function login({ email, password }: LoginInput): Promise<LoginResul
     throw new InactiveUserError("Usuario desativado");
   }
 
+  const challenge = await createTwoFactorChallenge(user);
+
+  return {
+    twoFactorRequired: true,
+    challengeId: challenge.id,
+    expiresAt: challenge.expiresAt,
+    message: "Codigo 2FA enviado para o e-mail cadastrado",
+  };
+}
+
+export async function verifyTwoFactor({
+  challengeId,
+  code,
+}: VerifyTwoFactorInput): Promise<AuthResult> {
+  const user = await verifyTwoFactorChallenge(challengeId, code);
+
+  if (!user.active) {
+    throw new InactiveUserError("Usuario desativado");
+  }
+
   const level = roleLevel(user.role);
+  const session = await createSession(user.id);
 
   const payload: AuthTokenPayload = {
     sub: user.id,
+    sid: session.id,
     email: user.email,
     role: user.role,
     level,

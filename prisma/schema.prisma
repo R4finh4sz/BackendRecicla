@@ -32,13 +32,45 @@ model User {
   termsAccepted Boolean      @default(false)
   email         String       @unique
   password      String
+  passwordSalt  String?
   role          Role         @default(USER)
   active        Boolean      @default(true)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   termAccepts   TermAccept[]
+  sessions      Session[]
+  twoFactorChallenges TwoFactorChallenge[]
 
   @@map("users")
+}
+
+model Session {
+  id        String    @id @default(uuid())
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model TwoFactorChallenge {
+  id         String    @id @default(uuid())
+  userId     String
+  codeHash   String
+  codeSalt   String
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("two_factor_challenges")
 }
 
 model Term {
