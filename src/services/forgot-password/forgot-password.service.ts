@@ -182,7 +182,7 @@ export async function resetPassword({ resetToken, password }: ResetPasswordInput
     }
     await tx.user.update({
       where: { id: challenge.userId },
-      data: { password: hashedPassword.hash, passwordSalt: hashedPassword.salt },
+      data: { password: hashedPassword },
     });
     await tx.session.updateMany({
       where: { userId: challenge.userId, revokedAt: null },

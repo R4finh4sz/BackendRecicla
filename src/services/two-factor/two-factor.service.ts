@@ -4,10 +4,6 @@ import { authConfig, securityConfig } from "@/config/env";
 import { roleLevel } from "@/config/roles";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/services/email/email.service";
-import {
-  decryptSensitiveData,
-  encryptSensitiveData,
-} from "@/services/data-protection/data-protection.service";
 import { createSession } from "@/services/session/session.service";
 import { AuthResult, AuthTokenPayload, VerifyTwoFactorInput } from "@/types/auth.types";
 
@@ -106,8 +102,6 @@ export async function verifyTwoFactorChallenge(challengeId: string, code: string
       user: {
         select: {
           id: true,
-          name: true,
-          email: true,
           role: true,
           active: true,
         },
@@ -144,11 +138,7 @@ export async function verifyTwoFactorChallenge(challengeId: string, code: string
     },
   });
 
-  return {
-    ...challenge.user,
-    name: decryptSensitiveData(challenge.user.name),
-    email: decryptSensitiveData(challenge.user.email),
-  };
+  return challenge.user;
 }
 
 export async function verifyTwoFactor({ challengeId, code }: VerifyTwoFactorInput): Promise<AuthResult> {
@@ -163,7 +153,6 @@ export async function verifyTwoFactor({ challengeId, code }: VerifyTwoFactorInpu
   const payload: AuthTokenPayload = {
     sub: user.id,
     sid: session.id,
-    email: encryptSensitiveData(user.email),
     role: user.role,
     level,
   };
@@ -173,6 +162,6 @@ export async function verifyTwoFactor({ challengeId, code }: VerifyTwoFactorInpu
 
   return {
     token,
-    user: { id: user.id, name: user.name, email: user.email, role: user.role, level },
+    user: { id: user.id, role: user.role, level },
   };
 }

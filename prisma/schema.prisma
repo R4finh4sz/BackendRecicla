@@ -34,7 +34,6 @@ model User {
   email         String
   emailHash     String?      @unique
   password      String
-  passwordSalt  String?
   role          Role         @default(USER)
   active        Boolean      @default(true)
   createdAt     DateTime     @default(now())

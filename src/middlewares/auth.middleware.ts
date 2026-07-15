@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import { authConfig } from "@/config/env";
 import { AuthTokenPayload } from "@/types/auth.types";
 import { isSessionActive } from "@/services/session/session.service";
-import { decryptSensitiveData } from "@/services/data-protection/data-protection.service";
 
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
@@ -31,7 +30,6 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     req.user = {
       id: payload.sub,
       sessionId: payload.sid,
-      email: decryptSensitiveData(payload.email),
       role: payload.role,
       level: payload.level,
     };

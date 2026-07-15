@@ -3,17 +3,9 @@ import bcrypt from "bcryptjs";
 const PASSWORD_SALT_ROUNDS = 12;
 
 export async function hashPassword(password: string) {
-  const salt = await bcrypt.genSalt(PASSWORD_SALT_ROUNDS);
-  const hash = await bcrypt.hash(password, salt);
-
-  return { hash, salt };
+  return bcrypt.hash(password, PASSWORD_SALT_ROUNDS);
 }
 
-export async function verifyPassword(password: string, hash: string, salt?: string | null) {
-  if (!salt) {
-    return bcrypt.compare(password, hash);
-  }
-
-  const candidateHash = await bcrypt.hash(password, salt);
-  return candidateHash === hash;
+export async function verifyPassword(password: string, hash: string) {
+  return bcrypt.compare(password, hash);
 }

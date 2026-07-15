@@ -277,10 +277,6 @@ export const swaggerSpec = swaggerJSDoc({
               type: "string",
               format: "uuid",
             },
-            email: {
-              type: "string",
-              format: "email",
-            },
             role: {
               type: "string",
               enum: ["USER", "ADMIN", "MASTER"],
@@ -329,7 +325,7 @@ export const swaggerSpec = swaggerJSDoc({
               type: "string",
             },
             user: {
-              $ref: "#/components/schemas/User",
+              $ref: "#/components/schemas/AuthenticatedUser",
             },
           },
         },

@@ -71,8 +71,7 @@ export async function createUserWithRole(
         termsAccepted,
         email: encryptSensitiveData(normalizedEmail),
         emailHash,
-        password: hashedPassword.hash,
-        passwordSalt: hashedPassword.salt,
+        password: hashedPassword,
         role,
       },
       select: {

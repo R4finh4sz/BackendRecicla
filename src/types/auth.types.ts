@@ -42,7 +42,11 @@ export interface LoginResult {
 
 export interface AuthResult {
   token: string;
-  user: AuthenticatedUser;
+  user: {
+    id: string;
+    role: Role;
+    level: number;
+  };
 }
 
 export interface RegisterResult {
@@ -52,7 +56,6 @@ export interface RegisterResult {
 export interface AuthTokenPayload {
   sub: string;
   sid: string;
-  email: string;
   role: Role;
   level: number;
 }

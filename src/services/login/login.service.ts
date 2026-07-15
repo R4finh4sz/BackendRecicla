@@ -18,7 +18,6 @@ export async function login({ email, password }: LoginInput): Promise<LoginResul
       name: true,
       email: true,
       password: true,
-      passwordSalt: true,
       role: true,
       active: true,
     },
@@ -28,7 +27,7 @@ export async function login({ email, password }: LoginInput): Promise<LoginResul
     throw new InvalidCredentialsError("E-mail ou senha inválidos");
   }
 
-  const isPasswordValid = await verifyPassword(password, user.password, user.passwordSalt);
+  const isPasswordValid = await verifyPassword(password, user.password);
   if (!isPasswordValid) {
     throw new InvalidCredentialsError("E-mail ou senha inválidos");
   }
