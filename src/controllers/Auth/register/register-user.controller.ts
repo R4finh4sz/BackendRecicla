@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { registerAdmin } from "@/services/register/register-admin.service";
-import { UserAlreadyExistsError } from "@/services/register/register.service";
+import { registerUser } from "@/services/Auth/register/register-user.service";
+import { UserAlreadyExistsError } from "@/services/Auth/register/register.service";
 import { registerSchema } from "@/validation/register.validation";
 
-export async function registerAdminController(req: Request, res: Response) {
+export async function registerUserController(req: Request, res: Response) {
   const parsed = registerSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -14,7 +14,7 @@ export async function registerAdminController(req: Request, res: Response) {
   }
 
   try {
-    const result = await registerAdmin(parsed.data);
+    const result = await registerUser(parsed.data);
     return res.status(201).json(result);
   } catch (err) {
     if (err instanceof UserAlreadyExistsError) {
@@ -22,6 +22,6 @@ export async function registerAdminController(req: Request, res: Response) {
     }
 
     console.error(err);
-    return res.status(500).json({ message: "Erro interno ao cadastrar administrador" });
+    return res.status(500).json({ message: "Erro interno ao cadastrar usuário" });
   }
 }

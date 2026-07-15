@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { InactiveUserError, InvalidCredentialsError, login } from "@/services/login/login.service";
-import { EmailConfigurationError, EmailDeliveryError } from "@/services/email/email.service";
+import { InactiveUserError, InvalidCredentialsError, login } from "@/services/Auth/login/login.service";
+import { EmailConfigurationError, EmailDeliveryError } from "@/services/Auth/email/email.service";
 import { loginSchema } from "@/validation/login.validation";
 
 export async function loginController(req: Request, res: Response) {

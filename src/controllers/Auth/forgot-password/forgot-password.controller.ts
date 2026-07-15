@@ -8,7 +8,7 @@ import {
   requestPasswordReset,
   resetPassword,
   verifyPasswordResetCode,
-} from "@/services/forgot-password/forgot-password.service";
+} from "@/services/Auth/forgot-password/forgot-password.service";
 import {
   forgotPasswordSchema,
   resetPasswordSchema,

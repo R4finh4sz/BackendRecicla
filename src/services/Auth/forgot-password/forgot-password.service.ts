@@ -1,9 +1,9 @@
 import crypto from "crypto";
 import { securityConfig } from "@/config/env";
 import { prisma } from "@/lib/prisma";
-import { sendEmail } from "@/services/email/email.service";
-import { hashPassword } from "@/services/password/password.service";
-import { createSearchHash, decryptSensitiveData } from "@/services/data-protection/data-protection.service";
+import { sendEmail } from "@/services/Auth/email/email.service";
+import { hashPassword } from "@/services/Auth/password/password.service";
+import { createSearchHash, decryptSensitiveData } from "@/services/Auth/data-protection/data-protection.service";
 import {
   ForgotPasswordInput,
   ResetPasswordInput,

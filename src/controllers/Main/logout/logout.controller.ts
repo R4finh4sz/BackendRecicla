@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { revokeSession } from "@/services/session/session.service";
+import { revokeSession } from "@/services/Auth/session/session.service";
 
 export async function logoutController(req: Request, res: Response) {
   if (!req.user) return res.status(401).json({ message: "Não autenticado" });

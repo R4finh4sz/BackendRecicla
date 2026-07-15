@@ -8,7 +8,7 @@ import {
   getTermStatusController,
   listTermsController,
   updateTermController,
-} from "@/controllers/terms/terms.controller";
+} from "@/controllers/Main/terms/terms.controller";
 import { CreateTermDto } from "@/dto/terms/create-term.dto";
 import { UpdateTermDto } from "@/dto/terms/update-term.dto";
 import { authMiddleware, requireRole } from "@/middlewares/auth.middleware";

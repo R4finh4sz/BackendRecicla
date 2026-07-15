@@ -6,7 +6,7 @@ import {
   TwoFactorChallengeNotFoundError,
   TwoFactorInactiveUserError,
   verifyTwoFactor,
-} from "@/services/two-factor/two-factor.service";
+} from "@/services/Auth/two-factor/two-factor.service";
 import { verifyTwoFactorSchema } from "@/validation/login.validation";
 
 export async function verifyTwoFactorController(req: Request, res: Response) {

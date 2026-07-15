@@ -3,7 +3,7 @@ import { Role } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { authConfig } from "@/config/env";
 import { AuthTokenPayload } from "@/types/auth.types";
-import { isSessionActive } from "@/services/session/session.service";
+import { isSessionActive } from "@/services/Auth/session/session.service";
 
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {

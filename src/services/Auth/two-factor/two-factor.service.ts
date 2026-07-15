@@ -3,8 +3,8 @@ import jwt from "jsonwebtoken";
 import { authConfig, securityConfig } from "@/config/env";
 import { roleLevel } from "@/config/roles";
 import { prisma } from "@/lib/prisma";
-import { sendEmail } from "@/services/email/email.service";
-import { createSession } from "@/services/session/session.service";
+import { sendEmail } from "@/services/Auth/email/email.service";
+import { createSession } from "@/services/Auth/session/session.service";
 import { AuthResult, AuthTokenPayload, VerifyTwoFactorInput } from "@/types/auth.types";
 
 export class TwoFactorChallengeNotFoundError extends Error {}

@@ -1,15 +1,15 @@
 import { Router } from "express";
 import { Role } from "@prisma/client";
-import { loginController } from "@/controllers/login/login.controller";
-import { logoutController } from "@/controllers/logout/logout.controller";
-import { verifyTwoFactorController } from "@/controllers/two-factor/two-factor.controller";
+import { loginController } from "@/controllers/Auth/login/login.controller";
+import { logoutController } from "@/controllers/Main/logout/logout.controller";
+import { verifyTwoFactorController } from "@/controllers/Auth/two-factor/two-factor.controller";
 import {
   forgotPasswordController,
   resetPasswordController,
   verifyPasswordResetCodeController,
-} from "@/controllers/forgot-password/forgot-password.controller";
-import { registerAdminController } from "@/controllers/register/register-admin.controller";
-import { registerUserController } from "@/controllers/register/register-user.controller";
+} from "@/controllers/Auth/forgot-password/forgot-password.controller";
+import { registerAdminController } from "@/controllers/Main/register/register-admin.controller";
+import { registerUserController } from "@/controllers/Auth/register/register-user.controller";
 import { authMiddleware, requireRole } from "@/middlewares/auth.middleware";
 
 const router = Router();

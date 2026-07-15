@@ -436,6 +436,69 @@ export const swaggerSpec = swaggerJSDoc({
             },
           },
         },
+        StoreProduct: {
+          type: "object",
+          properties: {
+            id: { type: "string", format: "uuid" },
+            name: { type: "string", example: "Garrafa reutilizável" },
+            description: { type: "string" },
+            photo: { type: "string", example: "https://exemplo.com/produto.jpg" },
+            price: { type: "string", format: "decimal", example: "25.00", description: "Valor em EcoCoin" },
+            quantity: { type: "integer", minimum: 0 },
+            city: { type: "string", example: "Salesópolis" },
+            state: { type: "string", example: "SP" },
+            active: { type: "boolean" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+          },
+        },
+        CreateStoreProductInput: {
+          type: "object",
+          required: ["name", "description", "photo", "price", "quantity"],
+          properties: {
+            name: { type: "string", maxLength: 120 },
+            description: { type: "string", maxLength: 2000 },
+            photo: { type: "string", maxLength: 2048 },
+            price: { oneOf: [{ type: "string", example: "25.00" }, { type: "number", example: 25 }] },
+            quantity: { type: "integer", minimum: 0 },
+          },
+        },
+        GrantEcoCoinInput: {
+          type: "object",
+          required: ["userId", "amount"],
+          properties: {
+            userId: { type: "string", format: "uuid" },
+            amount: { oneOf: [{ type: "string", example: "50.00" }, { type: "number", example: 50 }] },
+          },
+        },
+        RedeemProductInput: {
+          type: "object",
+          required: ["productId", "quantity"],
+          properties: {
+            productId: { type: "string", format: "uuid" },
+            quantity: { type: "integer", minimum: 1, maximum: 1000 },
+          },
+        },
+        ValidatePickupInput: {
+          type: "object",
+          required: ["code"],
+          properties: { code: { type: "string", pattern: "^[A-F0-9]{12}$", example: "A1B2C3D4E5F6" } },
+        },
+        Redemption: {
+          type: "object",
+          properties: {
+            id: { type: "string", format: "uuid" },
+            quantity: { type: "integer" },
+            unitPrice: { type: "string", format: "decimal" },
+            totalPrice: { type: "string", format: "decimal" },
+            pickupCode: { type: "string", nullable: true, description: "Removido após conclusão ou expiração" },
+            status: { type: "string", enum: ["PENDING", "COMPLETED", "EXPIRED"] },
+            expiresAt: { type: "string", format: "date-time", description: "Expira cinco dias após a troca" },
+            completedAt: { type: "string", format: "date-time", nullable: true },
+            product: { $ref: "#/components/schemas/StoreProduct" },
+            user: { type: "object", description: "Disponível somente ao administrador responsável", properties: { name: { type: "string" } } },
+          },
+        },
         ErrorResponse: {
           type: "object",
           properties: {
@@ -914,6 +977,64 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
           },
+        },
+      },
+      "/store/products": {
+        get: {
+          tags: ["Loja"], summary: "Lista produtos disponíveis na cidade do usuário", security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "Produtos da cidade", content: { "application/json": { schema: { type: "object", properties: { products: { type: "array", items: { $ref: "#/components/schemas/StoreProduct" } } } } } } },
+            401: { description: "Não autenticado", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } },
+            403: { description: "Disponível somente para USER" },
+          },
+        },
+      },
+      "/store/balance": {
+        get: {
+          tags: ["EcoCoin"], summary: "Consulta o saldo EcoCoin do usuário", security: [{ bearerAuth: [] }],
+          responses: { 200: { description: "Saldo atual", content: { "application/json": { schema: { type: "object", properties: { balance: { type: "string", example: "75.00" }, currency: { type: "string", enum: ["EcoCoin"] } } } } } }, 401: { description: "Não autenticado" }, 403: { description: "Disponível somente para USER" } },
+        },
+      },
+      "/store/redemptions": {
+        post: {
+          tags: ["Trocas"], summary: "Troca EcoCoins por um produto", security: [{ bearerAuth: [] }],
+          requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/RedeemProductInput" } } } },
+          responses: { 201: { description: "Troca criada e estoque debitado", content: { "application/json": { schema: { type: "object", properties: { redemption: { $ref: "#/components/schemas/Redemption" } } } } } }, 400: { description: "Dados inválidos" }, 401: { description: "Não autenticado" }, 403: { description: "Produto fora da cidade ou perfil sem acesso" }, 404: { description: "Produto não encontrado" }, 409: { description: "Saldo ou estoque insuficiente" } },
+        },
+        get: {
+          tags: ["Trocas"], summary: "Lista as trocas do usuário autenticado", security: [{ bearerAuth: [] }],
+          responses: { 200: { description: "Histórico de trocas", content: { "application/json": { schema: { type: "object", properties: { redemptions: { type: "array", items: { $ref: "#/components/schemas/Redemption" } } } } } } }, 401: { description: "Não autenticado" }, 403: { description: "Disponível somente para USER" } },
+        },
+      },
+      "/store/admin/products": {
+        post: {
+          tags: ["Administração da Loja"], summary: "Cria um produto na cidade do administrador", security: [{ bearerAuth: [] }],
+          requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/CreateStoreProductInput" } } } },
+          responses: { 201: { description: "Produto criado", content: { "application/json": { schema: { type: "object", properties: { product: { $ref: "#/components/schemas/StoreProduct" } } } } } }, 400: { description: "Dados inválidos" }, 401: { description: "Não autenticado" }, 403: { description: "Disponível somente para ADMIN" } },
+        },
+        get: {
+          tags: ["Administração da Loja"], summary: "Lista os produtos do administrador", security: [{ bearerAuth: [] }],
+          responses: { 200: { description: "Produtos administrados", content: { "application/json": { schema: { type: "object", properties: { products: { type: "array", items: { $ref: "#/components/schemas/StoreProduct" } } } } } } }, 401: { description: "Não autenticado" }, 403: { description: "Disponível somente para ADMIN" } },
+        },
+      },
+      "/store/admin/ecocoins": {
+        post: {
+          tags: ["EcoCoin"], summary: "Credita EcoCoins a usuário da mesma cidade", security: [{ bearerAuth: [] }],
+          requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/GrantEcoCoinInput" } } } },
+          responses: { 201: { description: "Crédito realizado", content: { "application/json": { schema: { type: "object", properties: { user: { type: "object", properties: { id: { type: "string", format: "uuid" }, ecoCoinBalance: { type: "string" } } } } } } } }, 400: { description: "Valor ou usuário inválido" }, 401: { description: "Não autenticado" }, 403: { description: "Usuário de outra cidade ou perfil sem acesso" }, 404: { description: "Usuário não encontrado" } },
+        },
+      },
+      "/store/admin/redemptions": {
+        get: {
+          tags: ["Administração da Loja"], summary: "Lista trocas dos produtos do administrador", security: [{ bearerAuth: [] }],
+          responses: { 200: { description: "Trocas da loja", content: { "application/json": { schema: { type: "object", properties: { redemptions: { type: "array", items: { $ref: "#/components/schemas/Redemption" } } } } } } }, 401: { description: "Não autenticado" }, 403: { description: "Disponível somente para ADMIN" } },
+        },
+      },
+      "/store/admin/redemptions/validate": {
+        post: {
+          tags: ["Administração da Loja"], summary: "Valida e consome um código de retirada", security: [{ bearerAuth: [] }],
+          requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/ValidatePickupInput" } } } },
+          responses: { 200: { description: "Retirada concluída; código removido", content: { "application/json": { schema: { type: "object", properties: { redemption: { $ref: "#/components/schemas/Redemption" } } } } } }, 400: { description: "Código malformado" }, 401: { description: "Não autenticado" }, 403: { description: "Código de outra loja ou perfil sem acesso" }, 404: { description: "Código inválido ou utilizado" }, 410: { description: "Código expirado" } },
         },
       },
       "/terms/create": {

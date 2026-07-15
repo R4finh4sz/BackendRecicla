@@ -4,7 +4,7 @@ import {
   createSearchHash,
   decryptSensitiveData,
   encryptSensitiveData,
-} from "@/services/data-protection/data-protection.service";
+} from "@/services/Auth/data-protection/data-protection.service";
 
 async function main() {
   const users = await prisma.user.findMany();

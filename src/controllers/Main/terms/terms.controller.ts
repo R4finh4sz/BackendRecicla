@@ -10,7 +10,7 @@ import {
   TermAlreadyAcceptedError,
   TermNotFoundError,
   updateTerm,
-} from "@/services/terms/terms.service";
+} from "@/services/Main/terms/terms.service";
 
 export async function createTermController(req: Request, res: Response) {
   try {

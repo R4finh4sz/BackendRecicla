@@ -18,32 +18,112 @@ enum TermType {
   ADMIN
 }
 
+enum EcoCoinTransactionType {
+  CREDIT
+  REDEMPTION
+  REFUND
+}
+
+enum RedemptionStatus {
+  PENDING
+  COMPLETED
+  EXPIRED
+}
+
 model User {
-  id            String       @id @default(uuid())
-  name          String
-  cpf           String
-  cpfHash       String?      @unique
-  birthDate     String
-  phone         String
-  cep           String
-  address       String
-  city          String
-  state         String
-  profilePhoto  String?
-  termsAccepted Boolean      @default(false)
-  email         String
-  emailHash     String?      @unique
-  password      String
-  role          Role         @default(USER)
-  active        Boolean      @default(true)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  termAccepts   TermAccept[]
-  sessions      Session[]
-  twoFactorChallenges TwoFactorChallenge[]
-  passwordResetChallenges PasswordResetChallenge[]
+  id                         String                   @id @default(uuid())
+  name                       String
+  cpf                        String
+  cpfHash                    String?                  @unique
+  birthDate                  String
+  phone                      String
+  cep                        String
+  address                    String
+  city                       String
+  state                      String
+  profilePhoto               String?
+  termsAccepted              Boolean                  @default(false)
+  email                      String
+  emailHash                  String?                  @unique
+  password                   String
+  role                       Role                     @default(USER)
+  active                     Boolean                  @default(true)
+  createdAt                  DateTime                 @default(now())
+  updatedAt                  DateTime                 @updatedAt
+  termAccepts                TermAccept[]
+  sessions                   Session[]
+  twoFactorChallenges        TwoFactorChallenge[]
+  passwordResetChallenges    PasswordResetChallenge[]
+  ecoCoinBalance             Decimal                  @default(0) @db.Decimal(12, 2)
+  products                   Product[]                @relation("AdminProducts")
+  redemptions                Redemption[]             @relation("UserRedemptions")
+  validatedRedemptions       Redemption[]             @relation("ValidatedRedemptions")
+  ecoCoinTransactions        EcoCoinTransaction[]     @relation("UserEcoCoinTransactions")
+  grantedEcoCoinTransactions EcoCoinTransaction[]     @relation("GrantedEcoCoinTransactions")
 
   @@map("users")
+}
+
+model Product {
+  id          String       @id @default(uuid())
+  adminId     String
+  name        String
+  description String
+  photo       String
+  price       Decimal      @db.Decimal(12, 2)
+  quantity    Int
+  city        String
+  state       String
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  admin       User         @relation("AdminProducts", fields: [adminId], references: [id])
+  redemptions Redemption[]
+
+  @@index([city, state, active])
+  @@index([adminId])
+  @@map("products")
+}
+
+model Redemption {
+  id            String           @id @default(uuid())
+  userId        String
+  productId     String
+  quantity      Int
+  unitPrice     Decimal          @db.Decimal(12, 2)
+  totalPrice    Decimal          @db.Decimal(12, 2)
+  pickupCode    String?          @unique
+  status        RedemptionStatus @default(PENDING)
+  expiresAt     DateTime
+  completedAt   DateTime?
+  validatedById String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User             @relation("UserRedemptions", fields: [userId], references: [id])
+  product       Product          @relation(fields: [productId], references: [id])
+  validatedBy   User?            @relation("ValidatedRedemptions", fields: [validatedById], references: [id])
+
+  @@index([userId, status])
+  @@index([productId, status])
+  @@index([status, expiresAt])
+  @@map("redemptions")
+}
+
+model EcoCoinTransaction {
+  id           String                 @id @default(uuid())
+  userId       String
+  grantedById  String?
+  redemptionId String?
+  type         EcoCoinTransactionType
+  amount       Decimal                @db.Decimal(12, 2)
+  description  String?
+  createdAt    DateTime               @default(now())
+  user         User                   @relation("UserEcoCoinTransactions", fields: [userId], references: [id])
+  grantedBy    User?                  @relation("GrantedEcoCoinTransactions", fields: [grantedById], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([redemptionId])
+  @@map("eco_coin_transactions")
 }
 
 model PasswordResetChallenge {

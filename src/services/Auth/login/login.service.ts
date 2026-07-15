@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { verifyPassword } from "@/services/password/password.service";
-import { createTwoFactorChallenge } from "@/services/two-factor/two-factor.service";
+import { verifyPassword } from "@/services/Auth/password/password.service";
+import { createTwoFactorChallenge } from "@/services/Auth/two-factor/two-factor.service";
 import {
   LoginInput,
   LoginResult,
 } from "@/types/auth.types";
-import { createSearchHash, decryptSensitiveData } from "@/services/data-protection/data-protection.service";
+import { createSearchHash, decryptSensitiveData } from "@/services/Auth/data-protection/data-protection.service";
 
 export class InvalidCredentialsError extends Error {}
 export class InactiveUserError extends Error {}
