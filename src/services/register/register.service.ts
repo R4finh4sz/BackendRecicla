@@ -1,5 +1,4 @@
 import { Prisma, Role } from "@prisma/client";
-import { roleLevel } from "@/config/roles";
 import { prisma } from "@/lib/prisma";
 import { RegisterInput } from "@/types/register.types";
 import { RegisterResult } from "@/types/auth.types";
@@ -76,18 +75,11 @@ export async function createUserWithRole(
       },
       select: {
         id: true,
-        name: true,
-        role: true,
       },
     });
 
     return {
-      user: {
-        ...user,
-        name: normalizeText(name),
-        email: normalizedEmail,
-        level: roleLevel(user.role),
-      },
+      user,
     };
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {

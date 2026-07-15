@@ -160,8 +160,5 @@ export async function verifyTwoFactor({ challengeId, code }: VerifyTwoFactorInpu
     expiresIn: authConfig.jwtExpiresIn,
   } as jwt.SignOptions);
 
-  return {
-    token,
-    user: { id: user.id, role: user.role, level },
-  };
+  return { token };
 }

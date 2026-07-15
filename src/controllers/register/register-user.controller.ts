@@ -18,7 +18,7 @@ export async function registerUserController(req: Request, res: Response) {
     return res.status(201).json(result);
   } catch (err) {
     if (err instanceof UserAlreadyExistsError) {
-      return res.status(409).json({ message: err.message });
+      return res.status(409).json({ message: "Não foi possível concluir o cadastro com os dados informados" });
     }
 
     console.error(err);

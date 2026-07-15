@@ -21,13 +21,11 @@ export interface TermEntity {
   updatedAt: Date;
 }
 
-export interface TermAcceptWithTermEntity {
-  id: string;
-  userId: string;
-  termId: string;
+export interface TermAcceptResult {
   accepted: boolean;
   acceptedAt: Date;
-  term: TermEntity;
+  documentId: string;
+  version: number;
 }
 
 function normalizeNullableText(value?: string) {
@@ -188,20 +186,34 @@ export async function getTermStatus(userId: string, role: Role) {
 export async function acceptCurrentTerm(
   userId: string,
   role: Role
-): Promise<TermAcceptWithTermEntity> {
+): Promise<TermAcceptResult> {
   const currentTerm = await getCurrentTermByRole(role);
 
   try {
-    return await prisma.termAccept.create({
+    const accept = await prisma.termAccept.create({
       data: {
         userId,
         termId: currentTerm.id,
         accepted: true,
       },
-      include: {
-        term: true,
+      select: {
+        accepted: true,
+        acceptedAt: true,
+        term: {
+          select: {
+            documentId: true,
+            version: true,
+          },
+        },
       },
     });
+
+    return {
+      accepted: accept.accepted,
+      acceptedAt: accept.acceptedAt,
+      documentId: accept.term.documentId,
+      version: accept.term.version,
+    };
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
       throw new TermAlreadyAcceptedError("Termo vigente já aceito");

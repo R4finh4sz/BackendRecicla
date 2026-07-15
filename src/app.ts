@@ -22,5 +22,11 @@ app.use("/auth", authRoutes);
 app.use("/terms", termsRoutes);
 
 app.get("/me", authMiddleware, (req, res) => {
-  res.json({ user: req.user });
+  res.json({
+    user: {
+      id: req.user!.id,
+      role: req.user!.role,
+      level: req.user!.level,
+    },
+  });
 });

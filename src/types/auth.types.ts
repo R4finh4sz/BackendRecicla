@@ -25,14 +25,6 @@ export interface ResetPasswordInput {
   passwordConfirmation: string;
 }
 
-export interface AuthenticatedUser {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  level: number;
-}
-
 export interface LoginResult {
   twoFactorRequired: true;
   challengeId: string;
@@ -42,15 +34,12 @@ export interface LoginResult {
 
 export interface AuthResult {
   token: string;
-  user: {
-    id: string;
-    role: Role;
-    level: number;
-  };
 }
 
 export interface RegisterResult {
-  user: AuthenticatedUser;
+  user: {
+    id: string;
+  };
 }
 
 export interface AuthTokenPayload {

@@ -10,7 +10,6 @@ import {
   VerifyPasswordResetCodeInput,
 } from "@/types/auth.types";
 
-export class PasswordResetUserNotFoundError extends Error {}
 export class PasswordResetChallengeNotFoundError extends Error {}
 export class PasswordResetCodeExpiredError extends Error {}
 export class PasswordResetBlockedError extends Error {
@@ -18,11 +17,7 @@ export class PasswordResetBlockedError extends Error {
     super(message);
   }
 }
-export class InvalidPasswordResetCodeError extends Error {
-  constructor(message: string, public readonly attemptsRemaining: number) {
-    super(message);
-  }
-}
+export class InvalidPasswordResetCodeError extends Error {}
 export class InvalidPasswordResetTokenError extends Error {}
 
 const CODE_LIMIT = 1_000_000;
@@ -46,7 +41,10 @@ export async function requestPasswordReset({ email }: ForgotPasswordInput) {
   });
 
   if (!user || !user.active) {
-    throw new PasswordResetUserNotFoundError("Usuário não encontrado");
+    return {
+      challengeId: crypto.randomUUID(),
+      expiresAt: addMinutes(securityConfig.passwordResetCodeExpiresMinutes),
+    };
   }
 
   const blockedChallenge = await prisma.passwordResetChallenge.findFirst({
@@ -56,10 +54,10 @@ export async function requestPasswordReset({ email }: ForgotPasswordInput) {
   });
 
   if (blockedChallenge?.blockedUntil) {
-    throw new PasswordResetBlockedError(
-      "Recuperacao de senha bloqueada temporariamente",
-      blockedChallenge.blockedUntil
-    );
+    return {
+      challengeId: crypto.randomUUID(),
+      expiresAt: addMinutes(securityConfig.passwordResetCodeExpiresMinutes),
+    };
   }
 
   const code = crypto.randomInt(0, CODE_LIMIT).toString().padStart(6, "0");
@@ -80,13 +78,17 @@ export async function requestPasswordReset({ email }: ForgotPasswordInput) {
     select: { id: true, expiresAt: true },
   });
 
-  await sendEmail({
-    to: decryptSensitiveData(user.email),
-    name: decryptSensitiveData(user.name),
-    subject: "Recuperação de senha ReciclaOnline",
-    textContent: `Olá, ${decryptSensitiveData(user.name)}.\n\nSeu código para redefinir a senha é: ${code}\n\nEle expira em ${securityConfig.passwordResetCodeExpiresMinutes} minutos. Se você não solicitou a recuperação, ignore este e-mail.`,
-    htmlContent: `<p>Olá, ${decryptSensitiveData(user.name)}.</p><p>Seu código para redefinir a senha é:</p><p><strong>${code}</strong></p><p>Ele expira em ${securityConfig.passwordResetCodeExpiresMinutes} minutos.</p><p>Se você não solicitou a recuperação, ignore este e-mail.</p>`,
-  });
+  try {
+    await sendEmail({
+      to: decryptSensitiveData(user.email),
+      name: decryptSensitiveData(user.name),
+      subject: "Recuperação de senha ReciclaOnline",
+      textContent: `Olá, ${decryptSensitiveData(user.name)}.\n\nSeu código para redefinir a senha é: ${code}\n\nEle expira em ${securityConfig.passwordResetCodeExpiresMinutes} minutos. Se você não solicitou a recuperação, ignore este e-mail.`,
+      htmlContent: `<p>Olá, ${decryptSensitiveData(user.name)}.</p><p>Seu código para redefinir a senha é:</p><p><strong>${code}</strong></p><p>Ele expira em ${securityConfig.passwordResetCodeExpiresMinutes} minutos.</p><p>Se você não solicitou a recuperação, ignore este e-mail.</p>`,
+    });
+  } catch (error) {
+    console.error("Falha interna no envio do e-mail de recuperação:", error);
+  }
 
   return { challengeId: challenge.id, expiresAt: challenge.expiresAt };
 }
@@ -122,10 +124,7 @@ export async function verifyPasswordResetCode({ challengeId, code }: VerifyPassw
         blockedUntil
       );
     }
-    throw new InvalidPasswordResetCodeError(
-      "Código de recuperação inválido",
-      securityConfig.passwordResetMaxAttempts - attempts
-    );
+    throw new InvalidPasswordResetCodeError("Código de recuperação inválido");
   }
 
   const tokenSecret = crypto.randomBytes(48).toString("base64url");

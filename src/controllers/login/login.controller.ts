@@ -15,7 +15,7 @@ export async function loginController(req: Request, res: Response) {
     if (err instanceof InvalidCredentialsError) return res.status(401).json({ message: err.message });
     if (err instanceof InactiveUserError) return res.status(403).json({ message: err.message });
     if (err instanceof EmailConfigurationError || err instanceof EmailDeliveryError) {
-      return res.status(502).json({ message: err.message });
+      return res.status(502).json({ message: "Não foi possível enviar o código de autenticação" });
     }
     console.error(err);
     return res.status(500).json({ message: "Erro interno ao processar login" });

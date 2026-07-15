@@ -210,7 +210,6 @@ export const swaggerSpec = swaggerJSDoc({
           type: "object",
           properties: {
             message: { type: "string", example: "Código de recuperação inválido" },
-            attemptsRemaining: { type: "integer", minimum: 1, maximum: 4, example: 4 },
           },
         },
         PasswordResetBlockedResponse: {
@@ -291,7 +290,10 @@ export const swaggerSpec = swaggerJSDoc({
           type: "object",
           properties: {
             user: {
-              $ref: "#/components/schemas/User",
+              type: "object",
+              properties: {
+                id: { type: "string", format: "uuid" },
+              },
             },
           },
         },
@@ -323,9 +325,6 @@ export const swaggerSpec = swaggerJSDoc({
           properties: {
             token: {
               type: "string",
-            },
-            user: {
-              $ref: "#/components/schemas/AuthenticatedUser",
             },
           },
         },
@@ -407,18 +406,6 @@ export const swaggerSpec = swaggerJSDoc({
         TermAccept: {
           type: "object",
           properties: {
-            id: {
-              type: "string",
-              format: "uuid",
-            },
-            userId: {
-              type: "string",
-              format: "uuid",
-            },
-            termId: {
-              type: "string",
-              format: "uuid",
-            },
             accepted: {
               type: "boolean",
               example: true,
@@ -427,9 +414,8 @@ export const swaggerSpec = swaggerJSDoc({
               type: "string",
               format: "date-time",
             },
-            term: {
-              $ref: "#/components/schemas/Term",
-            },
+            documentId: { type: "string", format: "uuid" },
+            version: { type: "integer", example: 3 },
           },
         },
         TermStatusResponse: {
@@ -798,24 +784,6 @@ export const swaggerSpec = swaggerJSDoc({
                 "application/json": { schema: { $ref: "#/components/schemas/ValidationErrorResponse" } },
               },
             },
-            404: {
-              description: "Usuário não encontrado",
-              content: {
-                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
-              },
-            },
-            429: {
-              description: "Recuperacao bloqueada temporariamente",
-              content: {
-                "application/json": { schema: { $ref: "#/components/schemas/PasswordResetBlockedResponse" } },
-              },
-            },
-            502: {
-              description: "Falha ao enviar o e-mail",
-              content: {
-                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
-              },
-            },
             500: {
               description: "Erro interno",
               content: {
@@ -850,21 +818,9 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Código inválido",
+              description: "Código inválido, expirado ou desafio inexistente",
               content: {
                 "application/json": { schema: { $ref: "#/components/schemas/InvalidPasswordResetCodeResponse" } },
-              },
-            },
-            404: {
-              description: "Desafio não encontrado ou já utilizado",
-              content: {
-                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
-              },
-            },
-            410: {
-              description: "Código expirado",
-              content: {
-                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
               },
             },
             429: {
