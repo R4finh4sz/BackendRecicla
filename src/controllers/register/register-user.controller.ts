@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
 import { registerUser } from "@/services/register/register-user.service";
 import { UserAlreadyExistsError } from "@/services/register/register.service";
-import { registerSchema } from "@/validation/register/register.validation";
+import { registerSchema } from "@/validation/register.validation";
 
 export async function registerUserController(req: Request, res: Response) {
   const parsed = registerSchema.safeParse(req.body);
 
   if (!parsed.success) {
     return res.status(400).json({
-      message: "Dados invalidos",
+      message: "Dados inválidos",
       errors: parsed.error.flatten().fieldErrors,
     });
   }
@@ -22,6 +22,6 @@ export async function registerUserController(req: Request, res: Response) {
     }
 
     console.error(err);
-    return res.status(500).json({ message: "Erro interno ao cadastrar usuario" });
+    return res.status(500).json({ message: "Erro interno ao cadastrar usuário" });
   }
 }

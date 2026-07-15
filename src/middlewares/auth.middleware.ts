@@ -3,13 +3,15 @@ import { Role } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import { authConfig } from "@/config/env";
 import { AuthTokenPayload } from "@/types/auth.types";
-import { isSessionActive } from "@/services/session.service";
+import { isSessionActive } from "@/services/session/session.service";
+import { decryptSensitiveData } from "@/services/data-protection/data-protection.service";
+
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Token nao informado" });
+    return res.status(401).json({ message: "Token não informado" });
   }
 
   const token = authHeader.split(" ")[1];
@@ -18,31 +20,31 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     const payload = jwt.verify(token, authConfig.jwtSecret) as AuthTokenPayload;
 
     if (!payload.sid) {
-      return res.status(401).json({ message: "Sessao invalida" });
+      return res.status(401).json({ message: "Sessão inválida" });
     }
 
     const sessionActive = await isSessionActive(payload.sid, payload.sub);
     if (!sessionActive) {
-      return res.status(401).json({ message: "Sessao expirada ou encerrada" });
+      return res.status(401).json({ message: "Sessão expirada ou encerrada" });
     }
 
     req.user = {
       id: payload.sub,
       sessionId: payload.sid,
-      email: payload.email,
+      email: decryptSensitiveData(payload.email),
       role: payload.role,
       level: payload.level,
     };
     return next();
   } catch (err) {
-    return res.status(401).json({ message: "Token invalido ou expirado" });
+    return res.status(401).json({ message: "Token inválido ou expirado" });
   }
 }
 
 export function requireLevel(minLevel: number) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ message: "Nao autenticado" });
+      return res.status(401).json({ message: "Não autenticado" });
     }
 
     if (req.user.level < minLevel) {
@@ -56,7 +58,7 @@ export function requireLevel(minLevel: number) {
 export function requireRole(...roles: Role[]) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ message: "Nao autenticado" });
+      return res.status(401).json({ message: "Não autenticado" });
     }
 
     if (!roles.includes(req.user.role)) {

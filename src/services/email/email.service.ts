@@ -22,7 +22,7 @@ interface SendEmailParams {
 
 export async function sendEmail({ to, name, subject, htmlContent, textContent }: SendEmailParams) {
   if (!brevoConfig.smtpUser || !brevoConfig.smtpPass || !brevoConfig.senderEmail) {
-    throw new EmailConfigurationError("Configuracao do Brevo nao encontrada");
+    throw new EmailConfigurationError("Configuração do Brevo não encontrada");
   }
 
   const transporter = nodemailer.createTransport({

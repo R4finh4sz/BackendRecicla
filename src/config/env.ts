@@ -14,6 +14,10 @@ export const authConfig = {
   sessionExpiresMinutes: Number(process.env.SESSION_EXPIRES_MINUTES || 60),
 };
 
+export const dataProtectionConfig = {
+  encryptionKey: getRequiredEnv("DATA_ENCRYPTION_KEY"),
+};
+
 export const brevoConfig = {
   smtpHost: process.env.BREVO_SMTP_HOST || "smtp-relay.brevo.com",
   smtpPort: Number(process.env.BREVO_SMTP_PORT || 587),
@@ -30,4 +34,8 @@ export const securityConfig = {
   bruteForceDelayMs: Number(process.env.BRUTE_FORCE_DELAY_MS || 500),
   twoFactorCodeExpiresMinutes: Number(process.env.TWO_FACTOR_CODE_EXPIRES_MINUTES || 15),
   twoFactorMaxAttempts: Number(process.env.TWO_FACTOR_MAX_ATTEMPTS || 6),
+  passwordResetCodeExpiresMinutes: Number(process.env.PASSWORD_RESET_CODE_EXPIRES_MINUTES || 15),
+  passwordResetTokenExpiresMinutes: Number(process.env.PASSWORD_RESET_TOKEN_EXPIRES_MINUTES || 15),
+  passwordResetMaxAttempts: Number(process.env.PASSWORD_RESET_MAX_ATTEMPTS || 5),
+  passwordResetBlockHours: Number(process.env.PASSWORD_RESET_BLOCK_HOURS || 6),
 };

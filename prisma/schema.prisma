@@ -21,8 +21,9 @@ enum TermType {
 model User {
   id            String       @id @default(uuid())
   name          String
-  cpf           String       @unique
-  birthDate     DateTime
+  cpf           String
+  cpfHash       String?      @unique
+  birthDate     String
   phone         String
   cep           String
   address       String
@@ -30,7 +31,8 @@ model User {
   state         String
   profilePhoto  String?
   termsAccepted Boolean      @default(false)
-  email         String       @unique
+  email         String
+  emailHash     String?      @unique
   password      String
   passwordSalt  String?
   role          Role         @default(USER)
@@ -40,8 +42,31 @@ model User {
   termAccepts   TermAccept[]
   sessions      Session[]
   twoFactorChallenges TwoFactorChallenge[]
+  passwordResetChallenges PasswordResetChallenge[]
 
   @@map("users")
+}
+
+model PasswordResetChallenge {
+  id                  String    @id @default(uuid())
+  userId              String
+  codeHash            String
+  codeSalt            String
+  attempts            Int       @default(0)
+  blockedUntil        DateTime?
+  verifiedAt          DateTime?
+  resetTokenHash      String?
+  resetTokenSalt      String?
+  resetTokenExpiresAt DateTime?
+  consumedAt          DateTime?
+  expiresAt           DateTime
+  createdAt           DateTime  @default(now())
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([blockedUntil])
+  @@map("password_reset_challenges")
 }
 
 model Session {

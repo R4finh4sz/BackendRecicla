@@ -1,9 +1,10 @@
 import { Prisma, Role } from "@prisma/client";
 import { roleLevel } from "@/config/roles";
 import { prisma } from "@/lib/prisma";
-import { hashPassword } from "@/services/password.service";
 import { RegisterInput } from "@/types/register.types";
 import { RegisterResult } from "@/types/auth.types";
+import { hashPassword } from "../password/password.service";
+import { createSearchHash, encryptSensitiveData } from "../data-protection/data-protection.service";
 
 export class UserAlreadyExistsError extends Error {}
 
@@ -30,22 +31,24 @@ export async function createUserWithRole(
 ): Promise<RegisterResult> {
   const normalizedEmail = normalizeText(email);
   const normalizedCpf = cpf.replace(/\D/g, "");
+  const emailHash = createSearchHash(normalizedEmail);
+  const cpfHash = createSearchHash(normalizedCpf);
 
   const existingUser = await prisma.user.findFirst({
     where: {
       OR: [
-        { email: normalizedEmail },
-        { cpf: normalizedCpf },
+        { emailHash },
+        { cpfHash },
       ],
     },
-    select: { email: true, cpf: true },
+    select: { emailHash: true, cpfHash: true },
   });
 
   if (existingUser) {
     const message =
-      existingUser.email === normalizedEmail
-        ? "E-mail ja cadastrado"
-        : "CPF ja cadastrado";
+      existingUser.emailHash === emailHash
+        ? "E-mail já cadastrado"
+        : "CPF já cadastrado";
 
     throw new UserAlreadyExistsError(message);
   }
@@ -55,17 +58,19 @@ export async function createUserWithRole(
   try {
     const user = await prisma.user.create({
       data: {
-        name: normalizeText(name),
-        cpf: normalizedCpf,
-        birthDate,
-        phone: phone.replace(/\D/g, ""),
-        cep: cep.replace(/\D/g, ""),
-        address: normalizeText(address),
-        city: normalizeText(city),
-        state: normalizeText(state),
-        profilePhoto: profilePhoto ? normalizeText(profilePhoto) : null,
+        name: encryptSensitiveData(normalizeText(name)),
+        cpf: encryptSensitiveData(normalizedCpf),
+        cpfHash,
+        birthDate: encryptSensitiveData(birthDate.toISOString()),
+        phone: encryptSensitiveData(phone.replace(/\D/g, "")),
+        cep: encryptSensitiveData(cep.replace(/\D/g, "")),
+        address: encryptSensitiveData(normalizeText(address)),
+        city: encryptSensitiveData(normalizeText(city)),
+        state: encryptSensitiveData(normalizeText(state)),
+        profilePhoto: profilePhoto ? encryptSensitiveData(normalizeText(profilePhoto)) : null,
         termsAccepted,
-        email: normalizedEmail,
+        email: encryptSensitiveData(normalizedEmail),
+        emailHash,
         password: hashedPassword.hash,
         passwordSalt: hashedPassword.salt,
         role,
@@ -73,7 +78,6 @@ export async function createUserWithRole(
       select: {
         id: true,
         name: true,
-        email: true,
         role: true,
       },
     });
@@ -81,13 +85,15 @@ export async function createUserWithRole(
     return {
       user: {
         ...user,
+        name: normalizeText(name),
+        email: normalizedEmail,
         level: roleLevel(user.role),
       },
     };
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
       const fields = Array.isArray(err.meta?.target) ? err.meta.target : [];
-      const message = fields.includes("cpf") ? "CPF ja cadastrado" : "E-mail ja cadastrado";
+      const message = fields.includes("cpfHash") ? "CPF já cadastrado" : "E-mail já cadastrado";
 
       throw new UserAlreadyExistsError(message);
     }

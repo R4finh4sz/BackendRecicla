@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const REQUIRED_FIELD_MESSAGE = "Campo obrigatorio";
+const REQUIRED_FIELD_MESSAGE = "Campo obrigatório";
 
 function normalizeText(value: string) {
   return value.trim().toLowerCase();
@@ -54,47 +54,47 @@ export const registerSchema = z.object({
   cpf: z
     .string({ required_error: REQUIRED_FIELD_MESSAGE })
     .transform(onlyDigits)
-    .pipe(z.string().refine(isValidCpf, "CPF invalido")),
+    .pipe(z.string().refine(isValidCpf, "CPF inválido")),
   birthDate: z
     .coerce
     .date({
       required_error: REQUIRED_FIELD_MESSAGE,
-      invalid_type_error: "Data de nascimento invalida",
+      invalid_type_error: "Data de nascimento inválida",
     })
-    .refine((date) => date <= new Date(), "Data de nascimento invalida")
-    .refine(isAtLeast18YearsOld, "Usuario deve ter pelo menos 18 anos"),
+    .refine((date) => date <= new Date(), "Data de nascimento inválida")
+    .refine(isAtLeast18YearsOld, "Usuário deve ter pelo menos 18 anos"),
   phone: z
     .string({ required_error: REQUIRED_FIELD_MESSAGE })
     .transform(onlyDigits)
-    .pipe(z.string().min(10, "Telefone invalido").max(11, "Telefone invalido")),
+    .pipe(z.string().min(10, "Telefone inválido").max(11, "Telefone inválido")),
   cep: z
     .string({ required_error: REQUIRED_FIELD_MESSAGE })
     .transform(onlyDigits)
-    .pipe(z.string().length(8, "CEP invalido")),
+    .pipe(z.string().length(8, "CEP inválido")),
   address: z
     .string({ required_error: REQUIRED_FIELD_MESSAGE })
     .transform(normalizeText)
-    .pipe(z.string().min(2, "Endereco obrigatorio").max(255, "Endereco muito longo")),
+    .pipe(z.string().min(2, "Endereço obrigatório").max(255, "Endereço muito longo")),
   city: z
     .string({ required_error: REQUIRED_FIELD_MESSAGE })
     .transform(normalizeText)
-    .pipe(z.string().min(2, "Cidade obrigatoria").max(100, "Cidade muito longa")),
+    .pipe(z.string().min(2, "Cidade obrigatória").max(100, "Cidade muito longa")),
   state: z
     .string({ required_error: REQUIRED_FIELD_MESSAGE })
     .transform(normalizeText)
-    .pipe(z.string().min(2, "Estado obrigatorio").max(50, "Estado muito longo")),
+    .pipe(z.string().min(2, "Estado obrigatório").max(50, "Estado muito longo")),
   profilePhoto: z
     .string()
     .trim()
     .optional()
     .transform((value) => (value ? value.toLowerCase() : undefined)),
   termsAccepted: z.literal(true, {
-    errorMap: () => ({ message: "Aceite dos termos obrigatorio" }),
+    errorMap: () => ({ message: "Aceite dos termos obrigatório" }),
   }),
   email: z
     .string({ required_error: REQUIRED_FIELD_MESSAGE })
     .trim()
-    .email("E-mail invalido")
+    .email("E-mail inválido")
     .transform((email) => email.toLowerCase()),
   password: z
     .string({ required_error: REQUIRED_FIELD_MESSAGE })
@@ -102,9 +102,9 @@ export const registerSchema = z.object({
     .max(128, "Senha muito longa"),
   passwordConfirmation: z
     .string({ required_error: REQUIRED_FIELD_MESSAGE })
-    .min(8, "Confirmacao de senha obrigatoria")
-    .max(128, "Confirmacao de senha muito longa"),
+    .min(8, "Confirmação de senha obrigatória")
+    .max(128, "Confirmação de senha muito longa"),
 }).refine((data) => data.password === data.passwordConfirmation, {
-  message: "Senhas nao conferem",
+  message: "Senhas não conferem",
   path: ["passwordConfirmation"],
 });

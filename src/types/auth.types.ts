@@ -10,6 +10,21 @@ export interface VerifyTwoFactorInput {
   code: string;
 }
 
+export interface ForgotPasswordInput {
+  email: string;
+}
+
+export interface VerifyPasswordResetCodeInput {
+  challengeId: string;
+  code: string;
+}
+
+export interface ResetPasswordInput {
+  resetToken: string;
+  password: string;
+  passwordConfirmation: string;
+}
+
 export interface AuthenticatedUser {
   id: string;
   name: string;

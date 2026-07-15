@@ -20,7 +20,7 @@ export function validateDto<T extends object>(Dto: DtoClass<T>) {
       }, {});
 
       return res.status(400).json({
-        message: "Dados invalidos",
+        message: "Dados inválidos",
         errors: fieldErrors,
       });
     }

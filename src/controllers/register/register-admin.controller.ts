@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
 import { registerAdmin } from "@/services/register/register-admin.service";
 import { UserAlreadyExistsError } from "@/services/register/register.service";
-import { registerSchema } from "@/validation/register/register.validation";
+import { registerSchema } from "@/validation/register.validation";
 
 export async function registerAdminController(req: Request, res: Response) {
   const parsed = registerSchema.safeParse(req.body);
 
   if (!parsed.success) {
     return res.status(400).json({
-      message: "Dados invalidos",
+      message: "Dados inválidos",
       errors: parsed.error.flatten().fieldErrors,
     });
   }

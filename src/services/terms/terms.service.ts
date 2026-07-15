@@ -104,7 +104,7 @@ export async function updateTerm(documentId: string, input: UpdateTermDto): Prom
     });
 
     if (!existingTerm) {
-      throw new TermNotFoundError("Termo nao encontrado");
+      throw new TermNotFoundError("Termo não encontrado");
     }
 
     return createNewVersion(
@@ -133,7 +133,7 @@ export async function getTermByDocumentId(documentId: string): Promise<TermEntit
   });
 
   if (!term) {
-    throw new TermNotFoundError("Termo nao encontrado");
+    throw new TermNotFoundError("Termo não encontrado");
   }
 
   return term;
@@ -150,7 +150,7 @@ export async function getCurrentTermByRole(role: Role): Promise<TermEntity> {
   });
 
   if (!term) {
-    throw new CurrentTermNotFoundError("Termo vigente nao encontrado");
+    throw new CurrentTermNotFoundError("Termo vigente não encontrado");
   }
 
   return term;
@@ -204,7 +204,7 @@ export async function acceptCurrentTerm(
     });
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      throw new TermAlreadyAcceptedError("Termo vigente ja aceito");
+      throw new TermAlreadyAcceptedError("Termo vigente já aceito");
     }
 
     throw err;

@@ -139,6 +139,87 @@ export const swaggerSpec = swaggerJSDoc({
             },
           },
         },
+        ForgotPasswordInput: {
+          type: "object",
+          required: ["email"],
+          properties: {
+            email: {
+              type: "string",
+              format: "email",
+              example: "usuario@email.com",
+            },
+          },
+        },
+        VerifyPasswordResetCodeInput: {
+          type: "object",
+          required: ["challengeId", "code"],
+          properties: {
+            challengeId: {
+              type: "string",
+              format: "uuid",
+              example: "3f57a0f8-6f3c-4b19-a0e2-6b4e8b7a1f2a",
+            },
+            code: {
+              type: "string",
+              pattern: "^\\d{6}$",
+              example: "123456",
+            },
+          },
+        },
+        ResetPasswordInput: {
+          type: "object",
+          required: ["resetToken", "password", "passwordConfirmation"],
+          properties: {
+            resetToken: {
+              type: "string",
+              description: "Token temporario retornado depois da validacao do codigo",
+            },
+            password: {
+              type: "string",
+              format: "password",
+              minLength: 8,
+              maxLength: 128,
+              example: "NovaSenha123",
+            },
+            passwordConfirmation: {
+              type: "string",
+              format: "password",
+              minLength: 8,
+              maxLength: 128,
+              example: "NovaSenha123",
+            },
+          },
+        },
+        ForgotPasswordResponse: {
+          type: "object",
+          properties: {
+            challengeId: { type: "string", format: "uuid" },
+            expiresAt: { type: "string", format: "date-time" },
+            message: { type: "string", example: "Código de recuperação enviado por e-mail" },
+          },
+        },
+        VerifyPasswordResetCodeResponse: {
+          type: "object",
+          properties: {
+            resetToken: { type: "string" },
+            expiresAt: { type: "string", format: "date-time" },
+            message: { type: "string", example: "Código validado" },
+          },
+        },
+        InvalidPasswordResetCodeResponse: {
+          type: "object",
+          properties: {
+            message: { type: "string", example: "Código de recuperação inválido" },
+            attemptsRemaining: { type: "integer", minimum: 1, maximum: 4, example: 4 },
+          },
+        },
+        PasswordResetBlockedResponse: {
+          type: "object",
+          properties: {
+            message: { type: "string", example: "Recuperacao bloqueada por 6 horas" },
+            blockedUntil: { type: "string", format: "date-time" },
+          },
+        },
         User: {
           type: "object",
           properties: {
@@ -237,7 +318,7 @@ export const swaggerSpec = swaggerJSDoc({
             },
             message: {
               type: "string",
-              example: "Codigo 2FA enviado para o e-mail cadastrado",
+              example: "Código 2FA enviado para o e-mail cadastrado",
             },
           },
         },
@@ -386,7 +467,7 @@ export const swaggerSpec = swaggerJSDoc({
           properties: {
             message: {
               type: "string",
-              example: "Dados invalidos",
+              example: "Dados inválidos",
             },
             errors: {
               type: "object",
@@ -418,7 +499,7 @@ export const swaggerSpec = swaggerJSDoc({
           },
           responses: {
             201: {
-              description: "Usuario cadastrado",
+              description: "Usuário cadastrado",
               content: {
                 "application/json": {
                   schema: {
@@ -428,7 +509,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             400: {
-              description: "Dados invalidos",
+              description: "Dados inválidos",
               content: {
                 "application/json": {
                   schema: {
@@ -438,7 +519,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             409: {
-              description: "E-mail ou CPF ja cadastrado",
+              description: "E-mail ou CPF já cadastrado",
               content: {
                 "application/json": {
                   schema: {
@@ -487,7 +568,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             400: {
-              description: "Dados invalidos",
+              description: "Dados inválidos",
               content: {
                 "application/json": {
                   schema: {
@@ -497,7 +578,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Token nao informado ou invalido",
+              description: "Token não informado ou inválido",
               content: {
                 "application/json": {
                   schema: {
@@ -517,7 +598,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             409: {
-              description: "E-mail ou CPF ja cadastrado",
+              description: "E-mail ou CPF já cadastrado",
               content: {
                 "application/json": {
                   schema: {
@@ -565,7 +646,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             400: {
-              description: "Dados invalidos",
+              description: "Dados inválidos",
               content: {
                 "application/json": {
                   schema: {
@@ -585,7 +666,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             403: {
-              description: "Usuario desativado",
+              description: "Usuário desativado",
               content: {
                 "application/json": {
                   schema: {
@@ -625,7 +706,7 @@ export const swaggerSpec = swaggerJSDoc({
           },
           responses: {
             200: {
-              description: "Codigo validado e token emitido",
+              description: "Código validado e token emitido",
               content: {
                 "application/json": {
                   schema: {
@@ -635,7 +716,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             400: {
-              description: "Dados invalidos",
+              description: "Dados inválidos",
               content: {
                 "application/json": {
                   schema: {
@@ -645,7 +726,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Codigo invalido",
+              description: "Código inválido",
               content: {
                 "application/json": {
                   schema: {
@@ -655,7 +736,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             403: {
-              description: "Codigo expirado ou usuario desativado",
+              description: "Código expirado ou usuário desativado",
               content: {
                 "application/json": {
                   schema: {
@@ -665,7 +746,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             404: {
-              description: "Desafio 2FA nao encontrado",
+              description: "Desafio 2FA não encontrado",
               content: {
                 "application/json": {
                   schema: {
@@ -697,14 +778,166 @@ export const swaggerSpec = swaggerJSDoc({
           },
         },
       },
+      "/auth/password/forgot": {
+        post: {
+          tags: ["Auth"],
+          summary: "Solicita a recuperação de senha",
+          description: "Envia um codigo numerico de 6 digitos ao e-mail cadastrado. O codigo expira em 15 minutos.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/ForgotPasswordInput" } },
+            },
+          },
+          responses: {
+            200: {
+              description: "Código enviado por e-mail",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ForgotPasswordResponse" } },
+              },
+            },
+            400: {
+              description: "E-mail inválido",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ValidationErrorResponse" } },
+              },
+            },
+            404: {
+              description: "Usuário não encontrado",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+              },
+            },
+            429: {
+              description: "Recuperacao bloqueada temporariamente",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/PasswordResetBlockedResponse" } },
+              },
+            },
+            502: {
+              description: "Falha ao enviar o e-mail",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+              },
+            },
+            500: {
+              description: "Erro interno",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+              },
+            },
+          },
+        },
+      },
+      "/auth/password/verify-code": {
+        post: {
+          tags: ["Auth"],
+          summary: "Valida o código de recuperação de senha",
+          description: "Permite 5 tentativas. A quinta falha bloqueia novas tentativas e solicitacoes por 6 horas.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/VerifyPasswordResetCodeInput" } },
+            },
+          },
+          responses: {
+            200: {
+              description: "Código validado e token temporário emitido",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/VerifyPasswordResetCodeResponse" } },
+              },
+            },
+            400: {
+              description: "Dados inválidos",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ValidationErrorResponse" } },
+              },
+            },
+            401: {
+              description: "Código inválido",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/InvalidPasswordResetCodeResponse" } },
+              },
+            },
+            404: {
+              description: "Desafio não encontrado ou já utilizado",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+              },
+            },
+            410: {
+              description: "Código expirado",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+              },
+            },
+            429: {
+              description: "Limite de tentativas atingido; bloqueio por 6 horas",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/PasswordResetBlockedResponse" } },
+              },
+            },
+            500: {
+              description: "Erro interno",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+              },
+            },
+          },
+        },
+      },
+      "/auth/password/reset": {
+        post: {
+          tags: ["Auth"],
+          summary: "Redefine a senha",
+          description: "Consome o token temporario, altera a senha e revoga todas as sessoes abertas do usuario.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/ResetPasswordInput" } },
+            },
+          },
+          responses: {
+            200: {
+              description: "Senha redefinida com sucesso",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: { message: { type: "string", example: "Senha redefinida com sucesso" } },
+                  },
+                },
+              },
+            },
+            400: {
+              description: "Senhas invalidas ou diferentes",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ValidationErrorResponse" } },
+              },
+            },
+            401: {
+              description: "Token inválido, expirado ou já utilizado",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+              },
+            },
+            500: {
+              description: "Erro interno",
+              content: {
+                "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+              },
+            },
+          },
+        },
+      },
       "/me": {
         get: {
-          tags: ["Usuarios"],
+          tags: ["Usuários"],
           summary: "Retorna o usuario autenticado",
           security: [{ bearerAuth: [] }],
           responses: {
             200: {
-              description: "Usuario autenticado",
+              description: "Usuário autenticado",
               content: {
                 "application/json": {
                   schema: {
@@ -719,7 +952,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Token nao informado ou invalido",
+              description: "Token não informado ou inválido",
               content: {
                 "application/json": {
                   schema: {
@@ -763,7 +996,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             400: {
-              description: "Dados invalidos",
+              description: "Dados inválidos",
               content: {
                 "application/json": {
                   schema: {
@@ -773,7 +1006,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Token nao informado ou invalido",
+              description: "Token não informado ou inválido",
               content: {
                 "application/json": {
                   schema: {
@@ -820,7 +1053,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Token nao informado ou invalido",
+              description: "Token não informado ou inválido",
               content: {
                 "application/json": {
                   schema: {
@@ -885,7 +1118,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             400: {
-              description: "Dados invalidos",
+              description: "Dados inválidos",
               content: {
                 "application/json": {
                   schema: {
@@ -895,7 +1128,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Token nao informado ou invalido",
+              description: "Token não informado ou inválido",
               content: {
                 "application/json": {
                   schema: {
@@ -915,7 +1148,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             404: {
-              description: "Termo nao encontrado",
+              description: "Termo não encontrado",
               content: {
                 "application/json": {
                   schema: {
@@ -960,7 +1193,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Token nao informado ou invalido",
+              description: "Token não informado ou inválido",
               content: {
                 "application/json": {
                   schema: {
@@ -980,7 +1213,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             404: {
-              description: "Termo nao encontrado",
+              description: "Termo não encontrado",
               content: {
                 "application/json": {
                   schema: {
@@ -1014,7 +1247,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Token nao informado ou invalido",
+              description: "Token não informado ou inválido",
               content: {
                 "application/json": {
                   schema: {
@@ -1024,7 +1257,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             404: {
-              description: "Termo vigente nao encontrado",
+              description: "Termo vigente não encontrado",
               content: {
                 "application/json": {
                   schema: {
@@ -1053,7 +1286,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Token nao informado ou invalido",
+              description: "Token não informado ou inválido",
               content: {
                 "application/json": {
                   schema: {
@@ -1063,7 +1296,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             404: {
-              description: "Termo vigente nao encontrado",
+              description: "Termo vigente não encontrado",
               content: {
                 "application/json": {
                   schema: {
@@ -1097,7 +1330,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             401: {
-              description: "Token nao informado ou invalido",
+              description: "Token não informado ou inválido",
               content: {
                 "application/json": {
                   schema: {
@@ -1107,7 +1340,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             404: {
-              description: "Termo vigente nao encontrado",
+              description: "Termo vigente não encontrado",
               content: {
                 "application/json": {
                   schema: {
@@ -1117,7 +1350,7 @@ export const swaggerSpec = swaggerJSDoc({
               },
             },
             409: {
-              description: "Termo vigente ja aceito",
+              description: "Termo vigente já aceito",
               content: {
                 "application/json": {
                   schema: {
