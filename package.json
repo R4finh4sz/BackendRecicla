@@ -9,7 +9,8 @@
     "start": "node dist/server.js",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
-    "prisma:studio": "prisma studio"
+    "prisma:studio": "prisma studio",
+    "data:encrypt": "tsx src/scripts/encrypt-sensitive-data.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
