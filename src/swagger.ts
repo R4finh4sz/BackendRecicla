@@ -286,6 +286,13 @@ export const swaggerSpec = swaggerJSDoc({
             },
           },
         },
+        DeleteAccountInput: {
+          type: "object",
+          required: ["password"],
+          properties: {
+            password: { type: "string", minLength: 1, maxLength: 128, format: "password" },
+          },
+        },
         RegisterResponse: {
           type: "object",
           properties: {
@@ -528,6 +535,39 @@ export const swaggerSpec = swaggerJSDoc({
       },
     },
     paths: {
+      "/account/export": {
+        get: {
+          tags: ["Conta e LGPD"],
+          summary: "Exporta os dados da conta autenticada em PDF",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: {
+              description: "PDF com os dados pessoais e históricos da conta",
+              content: { "application/pdf": { schema: { type: "string", format: "binary" } } },
+            },
+            401: { description: "Não autenticado" },
+            404: { description: "Conta não encontrada" },
+          },
+        },
+      },
+      "/account": {
+        delete: {
+          tags: ["Conta e LGPD"],
+          summary: "Exclui definitivamente a conta após confirmar a senha",
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: { "application/json": { schema: { $ref: "#/components/schemas/DeleteAccountInput" } } },
+          },
+          responses: {
+            204: { description: "Conta e dados vinculados excluídos" },
+            400: { description: "Senha não informada ou inválida" },
+            401: { description: "Não autenticado ou senha incorreta" },
+            404: { description: "Conta não encontrada" },
+            409: { description: "A conta ainda administra produtos que precisam ser transferidos" },
+          },
+        },
+      },
       "/auth/register/user": {
         post: {
           tags: ["Auth"],
